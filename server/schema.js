@@ -8,6 +8,7 @@ const {
 
 const Topic = require('./models/topics');
 const Article = require('./models/articles');
+const Comment = require('./models/comments');
 
 const TopicType = new GraphQLObjectType({
     name: 'Topic',
@@ -34,27 +35,31 @@ const ArticleType = new GraphQLObjectType({
     fields: () => ({
         _id: {
             type: GraphQLString,
-            resolve: topic => topic._id
+            resolve: article => article._id
         },
         title: {
             type: GraphQLString,
-            resolve: topic => topic.title
+            resolve: article => article.title
         },
         body: {
             type: GraphQLString,
-            resolve: topic => topic.body
+            resolve: article => article.body
         },
         belongs_to: {
             type: GraphQLString,
-            resolve: topic => topic.belongs_to
+            resolve: article => article.belongs_to
         },
         votes: {
             type: GraphQLInt,
-            resolve: topic => topic.votes
+            resolve: article => article.votes
         },
         created_by: {
             type: GraphQLString,
-            resolve: topic => topic.created_by
+            resolve: article => article.created_by
+        },
+        commentCount: {
+            type: GraphQLInt,
+            resolve: article => Comment.find({belongs_to: article._id}).count()
         }
     })
 });
@@ -79,6 +84,14 @@ module.exports = new GraphQLSchema({
                 },
                 resolve: (root, args) => 
                     Article.find({belongs_to: args.topicName})
+            },
+            articleById: {
+                type: ArticleType,
+                args: {
+                    id: {type: GraphQLString}
+                },
+                resolve: (root, args) => 
+                    Article.findById(args.id)
             }
         })
     })
